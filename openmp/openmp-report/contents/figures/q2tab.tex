@@ -1,0 +1,47 @@
+\begin{center}
+\begin{tabular}{ | l | l | }
+    \hline
+    nombre de valeurs   & temps réel (en sec) \\ 
+    \hline
+    $10$     			& $0.000000$ \\        
+    $100$ 		        & $0.000000$ \\         
+    $1000$ 		        & $0.000000$ \\           
+    $10000$ 		    & $0.000000$ \\           
+    $100000$ 		    & $0.003000$ \\           
+    $1000000$ 	        & $0.015998$ \\           
+    $10000000$ 	        & $0.147977$ \\           
+    $100000000$ 	    & $1.486774$ \\ \hline           
+\end{tabular}\\
+Tableau 1 : Temps obtenus avec l'algorithme séquentiel.\\
+
+\vskip0.5cm
+
+\begin{tabular}{ | l | l | }
+    \hline
+    nombre de valeurs     & temps réel (en sec) \\     \hline
+    $10$                  & $0.005924$ \\
+    $100$                 & $0.001129$ \\
+    $1000$                & $0.006175$ \\
+    $10000$               & $0.057452$ \\
+    $100000$              & $0.460016$ \\
+    $1000000$             & $5.238140$ \\
+    $10000000$            & $50.466725$ \\
+    $100000000$           & $466.325286$ \\ \hline
+\end{tabular}\\
+Tableau 2 : Temps obtenus avec l'algorithme parallèle pour $4$ threads.\\
+
+\vskip0.5cm
+
+\begin{tabular}{ | l | l | }
+    \hline
+    nombre de valeurs      & temps réel (en sec) \\     \hline
+    $100$                  & $0.000472$ \\
+    $1000$                 & $0.002655$ \\
+    $10000$                & $0.035883$ \\
+    $100000$               & $0.171612$ \\
+    $1000000$              & $3.301551$ \\
+    $10000000$             & $33.178712$ \\
+    $100000000$            & $330.295093$ \\ \hline
+\end{tabular}\\
+Tableau 3 : Temps obtenus avec l'algorithme parallèle pour $4$ threads.
+\end{center}

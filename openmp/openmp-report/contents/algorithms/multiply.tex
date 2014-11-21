@@ -1,0 +1,15 @@
+\begin{lstlisting}[mathescape, style=cilk, title=Algorithme parallèle modifié.]
+int * multiply($C$, $A$, $B$, $n$)
+    int $i$,$j$,$k$;
+
+    parallel for $i = 0$ to $n - 1$ do
+        parallel for $j = 0$ to $n - 1$ do
+            int $R[n]$; //privé pour chaque thread $i,j$
+        
+            parallel for $k = 0$ to $n - 1$ do
+                $R[k] = A[i,k] \times B[k,j]$;
+                
+            $C[i,j] =$ add($R$, $n$);
+    
+    return C;
+\end{lstlisting}

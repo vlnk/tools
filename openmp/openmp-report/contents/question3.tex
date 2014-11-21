@@ -1,0 +1,66 @@
+\subsection*{algorithme}
+Après avoir déroulé l'arbre récursif de l'algorithme \verb+ST1+, on a trouvé une problématique similaire à la question 1. C'est pourquoi, nous sommes arrivés à un algorithme proposant un mécanisme similaire.
+
+\begin{lstlisting}[mathescape, style=cilk, title=Algorithme ittératif]
+int * add($T$, $n$)
+    int $i$,$j$,$l$;
+
+    if $n = 2$ then
+        $T[2] += T[1]$
+    else
+        for $i = 2$ to n by $i \times 2$ do
+            parallel for $j = 1$ to $\frac{n}{i}$ do
+                parallel for $l = 1$ to $i$ do
+                    $T[j \times i + l] = T[j \times i + \frac{i}{2} - 1] + T[j \times i + l]$
+\end{lstlisting}
+
+On déroule alors l'algorithme selon le schéma ci-dessous, on voit alors qu'on peut paralléliser les traitement de chaque sous-tableau.
+
+\input{contents/figures/q3algo}
+
+Ainsi notre vision séquentielle est la division successive du tableau en sous tableaux de taille $2$, puis $4$, jusqu'à $n$. Ensuite, on sépare chaque morceau en 2 et tous les éléments de la première partie reçoivent additionnellement les éléments d'indice correspondant de la seconde partie.
+
+Étant donné que la première boucle ne peut pas être parallélisée, la durée de cet algorithme est :
+\begin{equation} \label{eq3}
+\begin{split}
+T_\infty(n) & = log \, n \times (log \, n + log \, n)\\ 
+ & = \mathcal{O} (log^2 \, n)
+\end{split}
+\end{equation}
+
+\subsection*{tests}
+
+On effectue alors une batterie de tests représentant les temps d'exécution en fonction du nombre de valeurs afin de comparer les deux algorithmes.
+
+\input{contents/figures/q3tab}
+
+\subsection*{analyse}
+Théoriquement, notre algorithme itératif devrait s'exécuter aussi vite que le récursif (à une constante près) étant donné que leurs durées valent toutes deux $T_\infty(n) = \mathcal{O} (log^2 \, n)$. D'après nos résultats, on constate qu'avec un $n$ assez grand on a la précence d'un facteur entre les temps d'exécution (ici, cette valeur est environ $13$). 
+
+En cherchant ce qui ce se passe au niveau des threads, nous avons remarqué que dans la première boucle parallélisée il y avait $8$ threads en activité, mais dans la seconde il y en a toujours qu'un seul.
+
+\begin{lstlisting}[style=cilk, title=Parallélisation des boucles itératives avec les commandes OpenMP]
+for (i = 2; i <= n; i*=2)
+{
+	#pragma omp parallel for private(j)
+	for (j = 0; j < n/i; ++j)
+	{
+		printf("number of threads %d\n", omp_get_num_threads()); /*display "8"*/
+		printf("number of the thread : %d\n", omp_get_thread_num());
+        
+		#pragma omp parallel for private(l)
+		for (l = i/2; l < i; ++l);
+        {
+			T[j*i + l] = T[j*i + i/2 - 1] + T[j*i + l];
+            
+            printf("number of threads %d\n", omp_get_num_threads()); /*display "1"*/
+            printf("number of the thread : %d\n", omp_get_thread_num());
+		}
+	}
+}
+\end{lstlisting}
+
+
+N'ayant pas une infinité de threads à disposition, la première parallélisation les occupe tous, et la deuxième n'a donc à disposition que le seul thread associé à l'itération de la boucle précédente ; on revient alors à du séquentiel pour cette boucle tandis que la première boucle est en séquentiel par \emph{blocs}. La durée revient alors, dans le cas où la première boucle est parallélisée avec sufisament de threads à $T_\infty(n) = \mathcal{O} (n \times log \, n)$ (ce que est beaucoup plus grand que du $\mathcal{O}(log^2 \, n)$).
+
+De la même manière, dans la version récursive, on dispose également que de $8$ threads. Dans celle-ci tous les threads se partagent chaque boucle mais n'étant que $8$ avec des boucles allant de $0$ à $\frac{n}{2}$, on obtient $\frac{n}{16}$ blocs à exécuter en séquentiel (les threads sont en parallèle dans les blocs). Ce qui implique que ces boucles ne sont plus en $\mathcal{O} (log \, n)$ mais en $\mathcal{O} (n)$. Ainsi en pratique on a une durée de $T_\infty(n) = \mathcal{O} (n \times log \, n)$.

@@ -1,0 +1,31 @@
+\subsection*{la fonction \textit{TD\_get(int * T, int index, int * get)}}
+
+On utilise la fonction \textit{TD\_get(int * T, int index, int * get)} pour récupérer une valeur contenue dans un sous-tableau selon un indice noté \textit{index} lié au tableau réel. On utilise alors la macro \textbf{BLOCK\_OWNER} pour récupérer le block qui est supposé contenir la valeur à cet indice. Cette macro permet d'obtenir le rang du block :
+$$
+block\_owner(index,p,n) = \frac{p \times (index + 1) - 1}{n}
+$$
+
+Lorsqu'on a récupéré le bon block, on a deux choix :
+\begin{itemize}
+    \item Soit c'est le block du processus qui appelle la fonction, dans ce cas on trouve la valeur directement.
+    \item Soit le block est géré par un autre processus et dans ce cas on y accède avec la \textbf{RMA}.
+\end{itemize}
+
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{TD\_init(\dots)} abrégée}]{listings/get.c}
+
+On accède à la \textbf{RMA} avec la fonction \verb+MPI_Get+ qui prend en paramètre la variable dans laquel la valeur trouvée est insérée, le rang du processus qui contient le bon block et l'indice correspondant du sous-tableau de ce même processus. Cet indice local est calculé en soustrayant le \textbf{FIRST} du bon block à l'indice cherché. 
+
+\input{figures/rma_get.tex}
+
+On récupère alors la valeur cherchée dans la variable \textit{get}. Si l'indice indiqué est invalide par rapport au tableau, la variable \textit{get} renvoie la valeur $-1$. Dans le programme, la fonction \textit{TD\_get()} est appelée par une processus arbitrairement choisi (ici, c'est $p-1$).
+
+Par contre, l'utilisation de \verb+MPI_Get+ et de la \textbf{RMA} oblige les processus à se synchroniser avec \verb+MPI_Win_fence+ avant et après l'appel de fonction utilisant la \textbf{RMA}. Étant donné que cette fonction n'est pas attachée à un groupe \verb+MPI_Comm+, il est obligatoire que tous les processus franchissent ces barrières ce qui sera contraignant pour le tri en parallèle.
+
+\begin{lstlisting}[language=c, style=b&w, title={Utilisation de \textit{MPI\_Win\_fence} pour l'utilisation de RMA}]
+MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win);
+if (rank == p - 1) TD_get(T, indice_get, &x);
+MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
+\end{lstlisting}
+
+\subsection*{la fonction \textit{TD\_put(int * T, int index, int put)}}
+La fonction \textit{TD\_get(int * T, int index, int put)} utilise le même principe que la fonction \textit{TD\_get()} sauf que la fonction \verb+MPI_Put+ est utilisée à la place de \verb+MPI_Get+ afin de remplacée la valeur à l'indice cherché.

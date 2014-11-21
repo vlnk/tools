@@ -1,0 +1,19 @@
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    \begin{axis}[%
+        enlarge x limits=false,
+        xlabel={nombre de valeurs $n$},
+        ylabel={temps d'exécution en secondes},
+        ylabel style={yshift=0.4cm},
+        title={Variation du temps d'exécution en fonction de $n$},
+        legend entries={algorithme récursif,algorithme itératif},
+        legend style={at={(0.2,0.8)},anchor=south},
+        height=0.9\textwidth,
+        xmode=log,
+        grid=major,
+        log basis x={2}]%
+        \addplot table {contents/data/q3st1data.txt};
+        \addplot table {contents/data/q3st2data.txt};
+    \end{axis}
+\end{tikzpicture}
+\end{center}

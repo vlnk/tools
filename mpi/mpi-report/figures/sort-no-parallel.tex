@@ -1,0 +1,97 @@
+\begin{figure}[ht]
+\centering
+\caption*{Schéma du cas sans parallélisation}
+\begin{tikzpicture}[scale=0.5]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STYLE
+\tikzstyle{case}=[rectangle,draw,minimum width=0.5cm,minimum height=0.5cm,font=\tiny]
+\tikzstyle{op}=[circle,draw]
+\tikzstyle{txt}=[]
+
+\tikzset{link/.style={->,>=stealth'}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NODES
+\node[txt] (txt2) at (7.5, 2.6) {\tiny tri sur ce tableau};
+\node[txt] (txt6) at (-2, 0) {\tiny (étape $1$)};
+\node[txt] (txt7) at (-2, -3) {\tiny (étape $2$)};
+
+\node[case] (T00) at (0, 0) {$17$};
+\node[case] (T01) at (1, 0) {$6$};
+\node[case] (T02) at (2, 0) {$20$};
+\node[case] (T03) at (3, 0) {$11$};
+\node[case] (T04) at (4, 0) {$4$};
+
+\node[case] (T06) at (6, 0) {$8$};
+\node[case] (T07) at (7, 0) {$14$};
+\node[case] (T08) at (8, 0) {$13$};
+\node[case] (T09) at (9, 0) {$19$};
+\node[case] (T10) at (10, 0) {$6$};
+
+\node[case] (T12) at (12, 0) {$7$};
+\node[case] (T13) at (13, 0) {$1$};
+\node[case] (T14) at (14, 0) {$19$};
+\node[case] (T15) at (15, 0) {$5$};
+\node[case] (T23) at (16, 0) {};
+
+\node[case] (T25) at (18, 0) {};
+\node[case] (T26) at (19, 0) {};
+\node[case] (T27) at (20, 0) {};
+\node[case] (T28) at (21, 0) {};
+\node[case] (T29) at (22, 0) {};
+
+\node[txt] (txt5) at (11, -1.5) {\tiny \textbf{MPI\_Barrier(comm)}};
+
+\node[case] (T30) at (0, -3) {};
+\node[case] (T31) at (1, -3) {};
+\node[case] (T32) at (2, -3) {};
+\node[case] (T33) at (3, -3) {};
+\node[case] (T34) at (4, -3) {};
+
+\node[case] (T36) at (6, -3) {};
+\node[case] (T37) at (7, -3) {};
+\node[case] (T38) at (8, -3) {};
+\node[case] (T39) at (9, -3) {};
+\node[case] (T40) at (10, -3) {};
+
+\node[case] (T42) at (12, -3) {};
+\node[case] (T43) at (13, -3) {};
+\node[case] (T44) at (14, -3) {};
+\node[case] (T45) at (15, -3) {};
+\node[case] (T53) at (16, -3) {$30$};
+
+\node[case] (T55) at (18, -3) {$37$};
+\node[case] (T56) at (19, -3) {$33$};
+\node[case] (T57) at (20, -3) {$35$};
+\node[case] (T58) at (21, -3) {$23$};
+\node[case] (T59) at (22, -3) {$36$};
+
+\node[txt] (txt3) at (19, -5.6) {\tiny tri sur ce tableau};
+
+\node[txt] (txt0) at (0, 1) {\tiny début};
+\node[txt] (txt1) at (15, 1) {\tiny fin};
+
+\node[txt] (txt10) at (16, -4) {\tiny début};
+\node[txt] (txt11) at (22, -4) {\tiny fin};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LINKS
+\draw[link] (txt0) -- (T00);
+\draw[link] (txt1) -- (T15);
+\draw[link] (txt10) -- (T53);
+\draw[link] (txt11) -- (T59);
+
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt}
+    ] 
+    (0,1.5) -- (15,1.5);
+    
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt,mirror}
+    ] 
+    (16,-4.5) -- (22,-4.5);
+
+\end{tikzpicture}
+\end{figure}

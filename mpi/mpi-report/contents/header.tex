@@ -1,0 +1,29 @@
+\makeatletter
+\renewcommand\@biblabel[1]{\textbf{#1.}} % Change the square brackets for each bibliography item from '[1]' to '1.'
+\renewcommand{\@listI}{\itemsep=0pt} % Reduce the space between items in the itemize and enumerate environments and the bibliography
+
+\renewcommand{\maketitle}{ % Customize the title - do not edit title and author name here, see the TITLE block below
+    \begin{flushright} % Right align
+    {\LARGE\@title} % Increase the font size of the title
+
+    \vspace{50pt} % Some vertical space between the title and author name
+
+    {\large\@author} % Author name
+    \\\@date % Date
+
+\vspace{40pt} % Some vertical space between the author block and abstract
+\end{flushright}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TITLE DEFINITION
+\title{\begin{center}
+\textit{8INF856 : Programmation sur architectures parallèles}\\ 
+\textbf{\textit{Devoir \#3}}
+\end{center}} % Subtitle
+
+\author{\textbf{\textsc{Robin Vermes}}, robin.vermes1@uqac.ca\\
+	\textbf{\textsc{Valentin Laurent}}, valentin.laurent1@uqac.ca \\ % Author
+	Maîtrise en informatique, \textbf{UQAC}} % Institution
+
+\date{\today} % Date

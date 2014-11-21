@@ -1,0 +1,16 @@
+\subsection*{la fonction \textit{TD\_init(int * T)}}
+
+On alloue une partie du tableau que sera traitée par processus ; dans cette optique avec \verb+MPI_Type_size(MPI_INT, &size_of_int)+ on récupère la taille d'un \textit{integer} qui peut être spécifique à chaque processus puis on alloue le tableau T de taille \textit{size} grâce à la fonction \textit{MPI} \verb+MPI_Alloc_mem(size_of_int*size, MPI_INFO_NULL, &T)+. 
+
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{TD\_init(int* T)} abrégée}]{listings/init.c}
+
+\input{figures/rma.tex}
+
+Dans la fonction \textit{TD\_init()}, chaque processeur crée un tableau de la taille du block dont il est responsable, et initialise aléatoirement les valeurs. Aucun tableau \emph{complet} n'est crée, on travaille avec des indices allant de $0$ à la taille du tableau $-1$, mais pour travailler directement avec les valeurs il faut accéder à la mémoire du processeur responsable, et donc adapter l'indice pour ce processeur.
+
+La gestion de la \textbf{remote-memory access} permet aux processus de partager une partie de leur mémoire avec les autres processus. Cela facilite les différents accès mémoire entre les processus. On instancie la \textbf{RMA} avec la fonction \verb+MPI_Win_create+ qui permet la création d'une fenêtre accessible par les processus. Chaque fenêtre local prend la taille du tableau \textit{c'est-à-dire} la taille du bloc multiplié par la taille d'une \textit{integer} en octets. La taille du bloc est calculé avec les macros \textbf{FIRST} et \textbf{LAST} telles que :
+\begin{align*}
+first(r,p,n) &= r \times \frac{n}{p}\\
+last(r,p,n) &= first(r+1,p,n) - 1\\
+size(r,p,n) &= last(r,p,n) - first(r,p,n) + 1
+\end{align*}

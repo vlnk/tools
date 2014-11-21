@@ -1,0 +1,116 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     PACKAGES AND OTHER DOCUMENT CONFIGURATIONS       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LANGAGE
+\usepackage{polyglossia}
+\setmainlanguage{french}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LINE SPACING
+%\newcommand{\linespacing}{1.5}
+%\renewcommand{\baselinestretch}{\linespacing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TYPOGRAPHY
+\usepackage{lmodern}
+\usepackage{fontenc}
+\linespread{1.05} % Change line spacing here, Palatino benefits from a slight increase by default
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HYPERREF
+\usepackage{hyperref} % Links managment
+\usepackage{url}
+\hypersetup{
+  colorlinks=true,
+  citecolor=blue,
+  urlcolor=blue,
+  linktoc=all,
+  linkcolor=black,
+  plainpages=false,
+  bookmarksnumbered,
+}
+% For print version, use this instead:
+%\usepackage[pdfusetitle,bookmarksnumbered,plainpages=false]{hyperref}
+%\usepackage{backref}
+%\renewcommand{\backrefpagesname}{Cited on}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% COLORS
+\usepackage[dvipsnames]{xcolor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRAPHICS
+\usepackage{graphicx} % Required for including pictures
+\usepackage{epstopdf}
+\usepackage{wrapfig} % Allows in-line images
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PAGE
+\usepackage{geometry} % Margin configuration
+\geometry{hmargin=2.5cm,vmargin=2.5cm}
+\usepackage{multicol} % Columns managment
+\usepackage{pdflscape} % Landscape
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MACRO : CHANGEMARGIN
+\newenvironment{changemargin}[2]{\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{0pt}%
+\setlength{\rightmargin}{0pt}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{0pt plus 1pt}%
+\addtolength{\leftmargin}{#1}%
+\addtolength{\rightmargin}{#2}%
+}\item }{\end{list}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% COUNTERS STYLE
+%\usepackage{titlesec}
+%\titleformat{\chapter}[hang]{\bf\huge}{\thechapter}{2pc}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TIKZ
+\usepackage{tikz} %TIKZ package required for draw graphics
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{hobby,backgrounds,calc,trees}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage{pgfplots}
+\usepackage{pgfopts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CODING STYLE
+\input{templates/listings} % for coding
+\renewcommand{\lstlistlistingname}{Table des codes source}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FLOAT PACKAGE
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Program}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CAPTION
+\usepackage{caption}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TABULAR
+\usepackage{tabularx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MULTICOLS
+\usepackage{multicol}
+\setlength{\columnsep}{2.75cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MATHS
+\usepackage{amsmath}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ALGORITHM
+\usepackage[ruled,vlined,french]{algorithm2e}
+\SetKwFor{Parallel}{parallèle pour}{faire}{finpour}
+

@@ -1,0 +1,13 @@
+\begin{lstlisting}[mathescape, style=cilk, title=La somme récursive sur le tableau.]
+int add($R$, $n$)
+    int $res$;
+
+    if ($n$ == $1$) $res = R[0]$;
+    else
+        int $x$ = spawn add($R$, $\frac{n}{2}$);
+        int $y$ = add($R + \frac{n}{2}$, $\frac{n}{2}$); //$R + \frac{n}{2}$ est l'adresse du sous-tableau
+        sync;
+        $res = x + y$;
+        
+    return $res$;
+\end{lstlisting}

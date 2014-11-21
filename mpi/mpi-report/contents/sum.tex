@@ -1,0 +1,5 @@
+\subsection*{la fonction \textit{TD\_sum(int * T)}}
+
+On utilise la fonction \textit{TD\_sum(int * T)} pour calculer la somme de tous les indices du tableau. On calcul d'abord la somme de chaque sous-tableau puis on utilise la fonction \verb+MPI_Reduce+ qui va ajouter chaque valeur les unes aux autres et placer cette somme dans la valeur \textit{result} via le flag \verb+MPI_SUM+.
+
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{TD\_sum(int * T)}}]{listings/sum.c}

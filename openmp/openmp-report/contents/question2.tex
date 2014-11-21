@@ -1,0 +1,29 @@
+\subsection*{mise en place}
+Pour cet algorithme nous avons recopié en langage \verb+C+ l'algorithme séquentiel du tri fusion et l'algorithme récursif du chapitre \textit{Multithreaded Algorithms} de \textsc{Cormen}, \textsc{Leiserson} et \textsc{Rivest} vus en cours. Nous avons parallélisé l'algorithme récursif avec la bibliothèque \textbf{OpenMP}.
+
+Pour compiler les deux programmes \verb+d2s.c+ et \verb+d2p.c+ il faut ajouter l'option de compilation \verb+-lm+ pour utiliser les fonctions mathématiques tel que \verb+floor()+ qui renvoie la partie entière d'un nombre. Les tests sont générés avec le script \verb+d2.sh+ sur le serveur.
+
+En théorie, l'algorithme séquentiel a un temps d'exécution $T(n) = \Theta(n)$ pour un tableau de taille $2 \times n$ et l'algorithme récursif a une durée $T_\infty = \Theta log^2 \, n$. Nous avons implémenté la récursivité en utilisant la ligne \verb+#pragma omp task+ devant chaque appel de fonction et en utilisant un \verb+#pragma omp taskwait+ après tous ces appels.
+
+\subsection*{tests}
+On effectue des séries de tests afin de comparer les deux algorithmes et on remarque que le temps d'exécution de l'algorithme parallèle explose pour un nombre de valeur $n > 10^6$.
+\input{contents/figures/q2tab}
+
+\newpage
+\subsection*{analyse}
+Lorsqu'on teste nos programmes, on note une meilleur efficacité de l'algorithme séquentiel jusqu'à des valeurs de $100$ millions, à partir du milliard les exécutions sont interrompues par le système avec une erreur de mémoire \emph{segmentation fault} lorsqu'on est connecté au serveur de l'UQAC pour chaque programme.
+
+Notre algorithme récursif est moins rapide en pratique. Cela s'explique par le fait qu'on n'ait que 8 processeurs à disposition, et non pas une infinité, comme supposé lors du calcul de la compléxité. Ici à chaque appel de la fonction \verb+merge()+ le thread doit executer séquentiellement une recherche binaire en $ \Theta (log \, n)$, puis appeler $2$ fois \verb+merge()+. Avec suffisamment de processeurs, les appels sont doublés, puis doublés et prennent une durée en $\Theta (log \, n)$.
+
+\input{contents/figures/q2collisions}
+
+Avec les $8$ processeurs du serveur, pour les $4$ premiers niveaux de l'arbre, on peut tout faire en parallèle, mais pour la suite, (n'ayant que $8$ processeurs, il ne peut y avoir réellement que $8$ thread actifs en même temps) c'est comme si il n'y avait qu'un thread (en terme de performance) pour tout le traitement de son sous-arbre, ce qui s'apparente à du séquentiel. Ainsi la durée de la descente dans l'arbre (sans compter la recherche binaire) est en $log(8) + \frac{n}{8}$.
+
+On obtient finalement une durée totale :
+\begin{equation} \label{eq-q2}
+\begin{split}
+T_\infty(n) & = log \, n \times (log \, 8 + \frac{n}{8})\\ 
+ & = \Theta (n \times log \, n)
+\end{split}
+\end{equation}
+ ce qui est plus grand que la durée du programme séquentiel.

@@ -1,0 +1,48 @@
+\begin{figure}[h]
+\centering
+\caption*{Disposition des fenêtres locales pour \textit{MPI\_Get}}
+\begin{tikzpicture}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STYLE
+\tikzstyle{case}=[rectangle,draw,minimum width=1cm,minimum height=0.5cm,color=Black!40]
+\tikzstyle{fcase}=[rectangle,draw,minimum width=1cm,minimum height=0.5cm]
+\tikzstyle{txt}=[color=Black!40]
+
+\tikzset{link/.style={->,>=stealth',color=Black!40}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NODES
+\node[txt] (t) at (-1, 0) {$T$};
+
+\node[case] (T00) at (0, 0) {$4$};
+\node[case] (T01) at (1, 0) {$7$};
+\node[case] (T02) at (2, 0) {$5$};
+\node[case] (T03) at (3, 0) {$9$};
+
+\node[txt] (R0) at (5, 0) {$\}$ rank 0};
+
+\node[case] (T10) at (0, -1.5) {$3$};
+\node[case] (T11) at (1, -1.5) {$6$};
+\node[case] (T12) at (2, -1.5) {$1$};
+\node[case] (T13) at (3, -1.5) {$8$};
+
+\node[txt] (R1) at (5, -1.5) {$\}$ rank 1};
+
+\node[case] (T20) at (0, -3) {$8$};
+\node[case] (T22) at (2, -3) {$5$};
+\node[fcase] (T21) at (1, -3) {$2$};
+\node[case] (T22) at (3, -3) {$0$};
+
+\node[txt, color=Black] (R2) at (5, -3) {$\}$ block\_owner};
+\node[txt, color=Black] (R3) at (1, -3.5) {indice $= 8$};
+\node[txt, color=Black] (R4) at (1, -4) {indice local $= 1$};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LINKS
+\draw[link] (t) -- (T00);
+
+\draw[link] (T03.east) to [out=320,in=140] (T10.west);
+\draw[link] (T13.east) to [out=320,in=140] (T20.west);
+
+\end{tikzpicture}
+\end{figure}

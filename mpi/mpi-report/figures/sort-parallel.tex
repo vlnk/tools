@@ -1,0 +1,83 @@
+\begin{figure}[ht]
+\centering
+\caption*{Schéma cas parallélisation}
+\begin{tikzpicture}[scale=0.5]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STYLE
+\tikzstyle{case}=[rectangle,draw,minimum width=0.5cm,minimum height=0.5cm,font=\tiny]
+\tikzstyle{op}=[circle,draw]
+\tikzstyle{txt}=[]
+
+\tikzset{link/.style={->,>=stealth'}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NODES
+\node[case] (T00) at (0, 0) {$4$};
+\node[case] (T01) at (1, 0) {$6$};
+\node[case] (T02) at (2, 0) {$11$};
+\node[case] (T03) at (3, 0) {$5$};
+\node[case] (T04) at (4, 0) {$1$};
+
+\node[case] (T06) at (6, 0) {$8$};
+\node[case] (T07) at (7, 0) {$14$};
+\node[case] (T08) at (8, 0) {$13$};
+\node[case] (T09) at (9, 0) {$6$};
+\node[case] (T10) at (10, 0) {$7$};
+
+\node[case] (T12) at (14, 0) {$19$};
+\node[case] (T13) at (15, 0) {$17$};
+\node[case] (T14) at (16, 0) {$20$};
+\node[case] (T15) at (17, 0) {$19$};
+\node[case] (T16) at (18, 0) {};
+
+\node[case] (T20) at (20, 0) {};
+\node[case] (T21) at (21, 0) {};
+\node[case] (T22) at (22, 0) {};
+\node[case] (T23) at (23, 0) {};
+\node[case] (T24) at (24, 0) {};
+
+\node[txt] (txt0) at (2,-1) {\tiny proc1};
+\node[txt] (txt1) at (8,-1) {\tiny proc2};
+\node[txt] (txt2) at (16,-1) {\tiny proc3};
+\node[txt] (txt3) at (22,-1) {\tiny proc4};
+
+\node[txt] (txt4) at (5,-2) {\tiny comm1};
+\node[txt] (txt5) at (19,-2) {\tiny comm2};
+
+\node[txt] (txt6) at (14,1.5) {\tiny indice de séparation};
+
+\node[txt] (txt2) at (5, 3.2) {\tiny tri sur ce tableau};
+\node[txt] (txt2) at (15.5, 3.2) {\tiny tri sur ce tableau};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LINKS
+\draw (11.9,1) -- (11.9,-1);
+\draw (12.1,1) -- (12.1,-1);
+\draw[link] (txt6) -- (T12);
+
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt,mirror}
+    ] 
+    (0,-1) -- (10,-1);
+            
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt,mirror},
+    ] 
+    (14,-1) -- (24,-1);
+    
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt}
+    ] 
+    (0,2) -- (10,2);
+            
+\draw[
+    decorate,
+    decoration={brace,amplitude=10pt}
+    ] 
+    (14,2) -- (17,2);
+
+\end{tikzpicture}
+\end{figure}

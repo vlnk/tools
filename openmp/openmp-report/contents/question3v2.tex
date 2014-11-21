@@ -1,0 +1,180 @@
+\subsection*{solution 1}
+\subsubsection*{- algorithme}
+
+Pour la version itérative de cet algorithme, nous avons une solution pour laquelle il y a deux boucles for dont les itérations doivent être effectuées de manière séquentielle. Pour contourner ce passage séquentiel, étant donné qu'au sein d'une itération, les opérations sont indépendantes, on veut paralléliser les opérations propres à ces itérations. Pour cela on a besoin de n threads qui chacuns effectuent le même traitement dépendant de leur numéro. Seulement la création de thread prend un temps $\Theta (log \, n)$, mais créer ces threads avant la boucle for séquentielle permet de nullifier cette perte de temps, et pour la parallélisation de la boucle séquentielle, on veut que les threads s'attendent après chaque itération avec une barrière.
+
+\begin{lstlisting}[mathescape, style=cilk, title=Algorithme parallèle avec OpenMP de \textit{prefix-sum}.]
+void Add_elements(int* T, int n)
+{
+	if (n > 1)
+	{
+		int i;
+		int j;
+		int l;
+		if (n==2)
+		{
+			T[1] += T[0];
+		}
+		else
+		{
+
+			#pragma omp parallel num_threads(n)
+			{
+				for(i=2; i <= n; i*=2)
+				{
+					if ((omp_get_thread_num() % i) == (i - 1))
+					{
+						T[omp_get_thread_num()] += T[omp_get_thread_num() - i/2];
+					}
+					#pragma omp barrier
+				}
+					
+				for(i=i/2; i >1; i/=2)
+				{
+					if ((omp_get_thread_num() % i) == (i/2 - 1))
+					{
+						if (!(omp_get_thread_num() < (i/2 - 1)))
+						{
+							T[omp_get_thread_num()] += T[omp_get_thread_num() - i/2];
+						}
+					}
+					#pragma omp barrier
+				}
+			}
+		}
+	}
+}
+
+\end{lstlisting}
+
+\subsubsection*{- analyse}
+L'utilisation de la directive "barrier" en OpenMP oblige l'utilisateur à faire passer tous les threads ou aucun par cette barrière. Dans notre solution, tous les threads y passent, il n'y a pas de problème à ce niveau. Cependant, lorsque l'on implémente cette version et qu'on l'exécute (fichier \verb+SP2_barrier.c+), la première barrière à l'air de stopper complètement la parallélisation, alors que notre but est simplement de s'assurer que tous les threads sont arrivés à la fin de chaque itération.
+
+\begin{lstlisting}[mathescape, style=cilk, title=Test d'exécution d'OpenMP d'une barrière dans une boucle.]
+omp_set_num_threads(8); //this is a test code with 8 threads
+
+#pragma omp parallel
+{
+    for (i = 0; i < 8; ++i)
+    {
+        printf("iteration : %d\n", i);
+
+        #pragma omp barrier
+    }
+}
+\end{lstlisting}
+
+Ce code \textit{test} donne l'affichage suivant :
+
+\begin{lstlisting}[mathescape, style=cilk, title=Résultats d'exécution avec une barrière OpenMP.]
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 0
+iteration : 1
+iteration : 2
+iteration : 3
+iteration : 4
+iteration : 5
+iteration : 6
+iteration : 7
+^C <- the program loops infinitely...
+\end{lstlisting}
+
+Nous n'avons donc pas trouvé le moyen d'implémenter notre solution en OpenMP. Nous avons implémenté un autre version en $ \Theta (log^2 \, n)$ où on parallélise à l'intérieur de la boucle à exécuter en séquentiel. Un problème est à noter : le système n'autorise pas la création de 1024 threads simultanés, on ne peut donc pas réaliser des tests avec des n très grands. Sur les tests avec cet algorithme, on remarque qu'il est très lent malgrès sa durée en $ \Theta (log^2 \, n)$, cela s'explique par le fait que beaucoup de threads sont créés pour peu de traitement.
+
+\newpage
+\begin{lstlisting}[mathescape, style=cilk, title=Partie du code modifier en OpenMP.]
+for (i=2; i <= n; i*=2)
+{
+    #pragma omp parallel num_threads(n)
+    {
+        if ((omp_get_thread_num() % i) == (i - 1))
+        {
+            T[omp_get_thread_num()] += T[omp_get_thread_num() - i/2];
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection*{tests}
+\input{contents/figures/q3v2tab}
+
+À partir de $n = 1024$, le programme lance une erreur sur la création de threads :
+\begin{center}
+\verb+libgomp: Thread creation failed: Resource temporarily unavailable+.
+\end{center}
+
+\subsection*{autre solution}
+\subsubsection*{- algorithme}
+Une troisième solution à été implémentée (fichier \verb+SP2_logsquare.c+), elle réside dans l'algorithme présenté ci-dessous :
+
+\begin{lstlisting}[mathescape, style=cilk, title=Algorithme ittératif]
+int * add($T$, $n$)
+    int $i$,$j$,$l$;
+
+    if $n = 2$ then
+        $T[2] += T[1]$
+    else
+        for $i = 2$ to n by $i \times 2$ do
+            parallel for $j = 1$ to $\frac{n}{i}$ do
+                parallel for $l = 1$ to $i$ do
+                    $T[j \times i + l] = T[j \times i + \frac{i}{2} - 1] + T[j \times i + l]$
+\end{lstlisting}
+
+En déroulant l'algorithme selon le schéma ci-dessous, on voit alors qu'on peut paralléliser les traitement de chaque sous-tableau.
+
+\input{contents/figures/q3algo}
+
+Ainsi cette vision séquentielle est la division successive du tableau en sous tableaux de taille $2$, puis $4$, jusqu'à $n$. Ensuite, on sépare chaque morceau en 2 et tous les éléments de la première partie reçoivent additionnellement les éléments d'indice correspondant de la seconde partie.
+
+Étant donné que la première boucle ne peut pas être parallélisée, la durée de cet algorithme est :
+\begin{equation} \label{eq3}
+\begin{split}
+T_\infty(n) & = log \, n \times (log \, n + log \, n)\\ 
+ & = \Theta (log^2 \, n)
+\end{split}
+\end{equation}
+
+Même si la durée de cet algorithme est plus grande que celle de la version théorique en $\Theta (log \, n)$ que nous avons présentée au début, cette version est en pratique plus efficace que le code OpenMP avec la parallélisation des boucles internes. Nous avons donc préféré analyser plus en profondeur ce code.
+
+\subsubsection*{- tests}
+
+On effectue alors une batterie de tests représentant les temps d'exécution en fonction du nombre de valeurs afin de comparer les deux algorithmes.
+
+\input{contents/figures/q3tab}
+
+\subsubsection*{- analyse}
+Théoriquement, notre algorithme itératif devrait s'exécuter aussi vite que le récursif (à une constante près) étant donné que leurs durées valent toutes deux $T_\infty(n) = \Theta (log^2 \, n)$. D'après nos résultats, on constate qu'avec un $n$ assez grand on a la précence d'un facteur entre les temps d'exécution (ici, cette valeur est environ $13$). 
+
+En cherchant ce qui ce se passe au niveau des threads, nous avons remarqué que dans la première boucle parallélisée il y avait $8$ threads en activité, mais dans la seconde il y en a toujours qu'un seul.
+
+\begin{lstlisting}[style=cilk, title=Parallélisation des boucles itératives avec les commandes OpenMP]
+for (i = 2; i <= n; i*=2)
+{
+	#pragma omp parallel for private(j)
+	for (j = 0; j < n/i; ++j)
+	{
+		printf("number of threads %d\n", omp_get_num_threads()); /*display "8"*/
+		printf("number of the thread : %d\n", omp_get_thread_num());
+        
+		#pragma omp parallel for private(l)
+		for (l = i/2; l < i; ++l);
+        {
+			T[j*i + l] = T[j*i + i/2 - 1] + T[j*i + l];
+            
+            printf("number of threads %d\n", omp_get_num_threads()); /*display "1"*/
+            printf("number of the thread : %d\n", omp_get_thread_num());
+		}
+	}
+}
+\end{lstlisting}
+
+
+N'ayant pas une infinité de threads à disposition, la première parallélisation les occupe tous, et la deuxième n'a donc à disposition que le seul thread associé à l'itération de la boucle précédente ; on revient alors à du séquentiel pour cette boucle tandis que la première boucle est en séquentiel par \emph{blocs}. La durée revient alors, dans le cas où la première boucle est parallélisée avec sufisament de threads à $T_\infty(n) = \Theta (n \times log \, n)$ (ce que est beaucoup plus grand que du $\Theta(log^2 \, n)$).
+
+De la même manière, dans la version récursive, on dispose également que de $8$ threads. Dans celle-ci tous les threads se partagent chaque boucle mais n'étant que $8$ avec des boucles allant de $0$ à $\frac{n}{2}$, on obtient $\frac{n}{16}$ blocs à exécuter en séquentiel (les threads sont en parallèle dans les blocs). Ce qui implique que ces boucles ne sont plus en $\Theta (log \, n)$ mais en $\Theta (n)$. Ainsi en pratique on a une durée de $T_\infty(n) = \Theta (n \times log \, n)$.

@@ -1,0 +1,7 @@
+\subsection*{la fonction \textit{main()}}
+
+La fonction \verb+main()+ initialise la bibliothèque \textbf{MPI} avec les paramètres \verb+argc+ et \verb+argv+. On récupère alors le nombre de processus, le rang de chaque processus et la taille du tableau dans des variables globales. On initialise ensuite le tableau \verb+T+ avec la fonction \verb+TD_init(T)+ puis on affiche le menu à l'utilisateur.
+
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{main()} abrégée}]{listings/main.c}
+
+La fonction \verb+welcome()+ affiche la choix et un prompteur demande le choix de l'utilisateur via un \verb+scanf+ ; le choix est ensuite analysé par un \verb+switch+ et chacune des fonctions est exécutée selon ce choix. Comme tous les processus exécutent le \verb+switch+, ils sont resynchronisés à la fin du switch grâce à \verb+MPI_Barrier(MPI_COMM_WORLD)+. Le programme boucle sur la sélection de choix tant que l'utilisateur n'a pas mis fin au programme (avec le choix $0$). Lors de la fin de l'exécution, le programme désalloue les espaces mémoires allouées avec \verb+MPI_Free_mem(T)+ et l'espace \textbf{RMA} avec \verb+MPI_Win_free(&win)+ puis termine l'exécution \textbf{MPI} avec \verb+MPI_Finalize()+.

@@ -1,0 +1,68 @@
+\subsection*{la fonction \textit{TD\_trier(int * T)}}
+\subsubsection*{présentation}
+
+La fonction \textit{TD\_trier(\dots)} initialise les indices de début et de fin du tri, et appelle la fonction \textit{tri\_pivot(\dots)} avec ces indices et les paramètres de base concernant les processeurs possédant le premier et le dernier élément à trier, la communication existante entre les processeurs, et leur rang. Tous ces paramètres sont utiles pour traiter le cas particulier d'une parallélisation des appels récursifs dont nous parlerons plus loin.
+
+\input{figures/sort-post.tex}
+
+La fonction \textit{tri\_pivot(\dots)} est récursive. Le processeur désigné comme "processeur début" récupère la valeur de la première case à trier, qui fera office de pivot, et la distibue aux autres processeurs par l'utilisation de la fonction \verb+MPI_Bcast()+.
+Par la suite, chaque processeur dans la communication fait appel à la fonction \textit{sort\_pivot(\dots)}, qui va leur permettre de chacun trier sa propre partie du tableau en fonction du pivot et de renvoyer l'indice de séparation (qui indique la première valeur supérieure ou égale au pivot).
+
+\input{figures/sort-pivot.tex}
+
+La fonction \textit{swap(\dots)} est ensuite utilisée pour que les processeurs des parties "basses" du tableau et ceux des parties "hautes", s'échangent des valeurs qui sont trop grandes ou trop petites par rapport au pivot. Elle retourne l'indice du tableau marquant la séparation entre les éléments strictement inférieurs, et les éléments supérieurs au pivot.
+
+\input{figures/sort-post-swap.tex}
+
+Si l'indice récupéré indique juste le début de la partie d'un des processeurs, les deux sous tableaux à traiter sont gérés par 2 groupes de processeurs bien distincts, et on peut donc paralléliser.
+Pour cela, on utilise la fonction \verb+MPI_Comm_split()+ pour séparer les processeurs de la communication actuelle dans 2 nouveaux groupes de communication. Le premier traitera la première sous-partie du tableau, et le deuxième traitera la deuxième. 
+
+\cleardoublepage
+Cela implique d'entrer en paramètre de la fonction \textit{tri\_pivot(\dots)} : la nouvelle communication, le rang du processeur dans la nouvelle communication, et les numéros des processeurs "debut" et "fin" dans la nouvelle communication.
+Si l'indice récupéré est le même que le précédent ayant engendré une parallélisation, cela veut dire que les processeurs gérant la deuxième partie ont eu pour pivot le plus petit élément des éléments qu'ils ont à traiter, et qu'ils ne doivent pas tenter de paralléliser à nouveau, mais de travailler sur le même sous tableau moins le premier élément.
+
+\input{figures/sort-parallel.tex}
+
+Si on ne peut pas paralléliser, on appelle, de la même manière, la fonction \textit{tri\_pivot(\dots)} sur le premier sous-tableau, on attend la fin de son exécution, et on fait appel au tri sur la deuxième sous partie. On doit absolument attendre la fin du tri du premier sous tableau car le processeur qui possède le début du deuxième sous tableau sera occupé à trier le premier, et donc il y aura des incohérences dans les appels des fonctions de communication inter-processeurs.
+A noter qu'avec la méthode où on parallélise, il est malheureusement impossible d'utiliser les fonctions \verb+MPI_Get()+ ou \verb+MPI_Put()+ pour récupérer le pivot ou échanger les valeurs, car pour cela, il faut que tous les processeurs appellent la fonction \verb+MPI_Win_fence+, et si le traitement d'un sous tableau est plus long que l'autre, il n'y aura pas le même nombre d'appels à cette fonction, et donc un problème de synchronisation.
+
+\input{figures/sort-no-parallel.tex}
+
+On a donc le code ci-dessous :
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{tri\_pivot(\dots)} abrégée}]{listings/tri-pivot.c}
+
+\subsubsection*{la fonction \textit{sort\_pivot(\dots)}}
+La fonction \textit{sort\_pivot(\dots)} effectue un tri rapide sur ses éléments par rapport au pivot entré en paramètre. Deux indices sont initialisés aux indices de début et de fin de tri de la portion du processeur en question. L'indice de début est incrémenté tant qu'on trouve des valeurs inférieures strictement au pivot, puis l'indice de fin est décrémenté tant qu'on trouve des valeurs supérieures ou égales au pivot. Si l'indice de début est inférieur à l'indice de fin, on fait l'échange, sinon on arrête. On recommence tant que l'indice de début est strictement inférieur à celui de fin.
+Enfin l'indice renvoyé est l'indice de début, qui aura été incrémenté une fois de plus si la valeur sur laquelle il pointe est strictement inférieure au pivot, ce qui veut dire que tous les éléments gérés par le processeur sont strictement inférieurs au pivot.
+
+On a donc le code ci-dessous :
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{sort\_pivot(\dots)} abrégée}]{listings/sort-pivot.c}
+
+\cleardoublepage
+\subsubsection*{la fonction \textit{swap(\dots)}}
+Dans cette fonction, un processeur est initialement le "processeur de début", et un autre est le "processeur de fin". Tant que le premier est strictement inférieur au deuxième, on n'a pas terminé le traitement. Pour ce traitement, on vérifie que le "processeur de début" a une valeur à échanger (c'est-à-dire strictement inférieure au pivot), c'est le cas si son indice (récupéré grâce à la fonction \textit{sort\_pivot(\dots)}) est inférieur ou égal à l'indice de son dernier élément. Un booléen "deb\_valide" est modifié pour indiquer si oui ou non le "processeur de début" a une valeur à échanger. Ce booléen est envoyé aux autres processeurs de la communication par un broadcast. S'il est à 0, tout le monde incrémente son numéro du "processeur de début", s'il est à 1, le "processeur de fin" fait de même (il vérifie que son indice est supérieur stricement à l'indice de son premier élément, modifie son booléen "fin\_valide", et le broadcast à tous les processeurs de la communication). S'il a également une valeur à échanger, on effectue l'échange grâce à des \verb+MPI_Recv()+ et \verb+MPI_Send()+, puis l'indice du "processeur de début" est incrémenté, et celui du "processeur de fin" est décrémenté. S'il n'a pas de valeur à échanger, on recommence.
+A chaque début de la boucle, les processeurs vérifient s'ils sont le processeur de début, puis, plus loin, s'ils sont le processeur de fin.
+Lorsque le numéro du "processeur de début" n'est plus strictement inférieur à celui du "processeur de fin", on arrête. Il reste à déterminer lequel du "processeur de début" ou du "processeur de fin" doit fournir l'indice qui permet de séparer le tableau en deux. On fait cela grace à un booléen "last\_move" qui est mis à 0 lorsque le numéro du "processeur de début" avance, ou à 1 lorsque celui du "processeur de fin" est décrémenté. A la fin du traitement, on sait donc lequel à été changé en dernier, et on sait que l'autre peut posséder des valeurs inférieures et supérieures au pivot, c'est donc cet autre processeur qui fait un broadcast de l'indice à rapporter. Cet indice est la valeur de retour de la fonction \textit{swap(\dots)}, il indique la séparation en deux du tableau.
+
+On a donc le code ci-dessous :
+\lstinputlisting[language=c, style=b&w, title={La fonction \textit{swap(\dots)} abrégée}]{listings/swap.c}
+
+\cleardoublepage
+\input{figures/sort-swap.tex}
+
+\cleardoublepage
+\subsubsection*{analyse du tri}
+Le tri appelle la fonction \textit{sort\_pivot(\dots)} dans laquelle chaque processeur parcourt toutes ses cases, on a donc un temps de $\frac{n}{p}$, la fonction swap parcourt toutes les cases concernées par un éventuel changement, en moyenne $\frac{n}{2}$ (si chaque processeur à autant de valeurs plus grandes que le processeur et plus petites, pour chaque processeur, seules la moitié de ces valeurs est parcrourue). Puis il y a les appels récursifs, qui peuvent être parallélisés dans un cas particulier (probabilité de $\frac{p}{n}$ d'être dans ce cas), ou pas dans tous les autres cas, dont on considère qu'en moyenne, ils découpent le tableau en $2$. 
+
+On a donc une fonction qui a une équation de complexité : 
+$$T(n) = 2 \times T(\frac{n}{2}) + c \times n$$
+
+Où $c$ est une constante. L'algorithme prend donc un temps moyen en $\Theta (n \times log \, n)$ pour trier le tableau.
+
+
+
+
+
+
+
+
